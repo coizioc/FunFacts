@@ -7,6 +7,7 @@
 /cohesivenessIndexCache
 /metricOutput
 *.bin
+*.lwp
 similarity.log
 throttle.ctrl
 user-config.py
