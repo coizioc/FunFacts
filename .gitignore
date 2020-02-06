@@ -1,0 +1,12 @@
+/__pycache__
+/apicache-py3
+/articleCache
+/articleCategoriesCache
+/articleLists
+/categoryArticlesCache
+/cohesivenessIndexCache
+/metricOutput
+*.bin
+similarity.log
+throttle.ctrl
+user-config.py
