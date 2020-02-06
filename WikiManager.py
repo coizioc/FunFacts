@@ -16,6 +16,14 @@ import functools
 import traceback
 import operator
 
+#import spacy
+
+#nlp = spacy.load("en_core_web_sm")
+
+from nltk.stem.snowball import SnowballStemmer
+
+stemmer = SnowballStemmer(language='english')
+
 def _instance_method_alias(obj, arg):
     """
     Alias for instance method that allows the method to be called in a 
@@ -29,7 +37,7 @@ def _instance_method_alias(obj, arg):
 
 class WikiManager:
     def __init__(self):
-        print "init WikiManager"
+        print("init WikiManager")
         self.reverseStemHashtable = {}
         self.yearRegex = re.compile("Category:\\d{4}.*")
         #self.p = stemmer.PorterStemmer()
@@ -63,7 +71,7 @@ class WikiManager:
         #print [cat.title() for cat in page.categories()]
         cats = {cat:1 for cat in page.categories()}
         if any(["People" in tcat.title() for tcat in cats]):
-            print cats
+            print(cats)
             return True
         currcats = cats.copy()
         allcats = {}
@@ -77,13 +85,13 @@ class WikiManager:
                 allcats[cat] = 1
                 parentcats = {cat:1 for cat in cat.categories()}
                 if any(["People" in tcat.title() for tcat in parentcats]):
-                    print parentcats
+                    print(parentcats)
                     return True
                 for parcat in parentcats:
                     if parcat not in allcats and parcat not in newcats:
                         newcats[parcat] = 1
             currcats = newcats
-            print len(currcats), currcats
+            print(len(currcats), currcats)
         #self.historicCats.update(allcats)
         return False
     
@@ -108,7 +116,7 @@ class WikiManager:
                 return lines
         
         site = Site("en")
-        page = Page(site, article.decode("utf8"))
+        page = Page(site, article)
         #print article
         #print page.get()
         #print page.get(get_redirect = True)
@@ -146,12 +154,12 @@ class WikiManager:
         fname = baseDir+category
         if recurse:
             fname = baseDir+category
-        fname = fname.encode('utf8')
+        fname = fname
         if self.printMode:
             try:
-                print unicode(fname)
+                print(fname)
             except:
-                print "error printing fname"
+                print("error printing fname")
         if os.path.isfile(fname):
             lines = []
             try:
@@ -170,7 +178,7 @@ class WikiManager:
         except:
             cat = Category(site, title=category.decode("utf-8"))
         articles = cat.articles(namespaces = 0, recurse=recurse)
-        res = [article.title().encode('utf8') for article in articles]
+        res = [article.title() for article in articles]
         #print res
         text = ""
         for cat in res:
@@ -188,13 +196,14 @@ class WikiManager:
             
     def normalizeText(self, text):
         text = text.lower()
-        text = re.sub('[^0-9a-zA-Z]+', ' ', text)
+        text = re.sub(r'[^0-9a-zA-Z]+', ' ', text)
         articleWords = text.split()
         articleWords = self.removeStopWords(articleWords)
         stemmedWords = []
         for word in articleWords:
-            p = stemmer.PorterStemmer()
-            stemmed = p.stemWord(word)
+            stemmed = stemmer.stem(word)
+            # p = stemmer.PorterStemmer()
+            # stemmed = p.stemWord(word)
             self.reverseStemHashtable[stemmed] = word
             stemmedWords.append(stemmed)
         return stemmedWords
@@ -202,7 +211,7 @@ class WikiManager:
     def getArticleSentencesNLP(self, art):
         text = "this’s a sent tokenize test. this is sent two. is this sent three? sent 4 is cool! Now it’s your turn."
         res = nltk.sent_tokenize(text)
-        print res
+        print(res)
         exit()
         
     def getArticleSentences(self, art):
@@ -214,7 +223,7 @@ class WikiManager:
         return (sentences, normSentences)
         
     def printNum(self, num):
-        print num
+        print(num)
     
     def getArticleContent(self, art):
         try:
@@ -225,8 +234,9 @@ class WikiManager:
                 articleContent = articleContent.split(".")[0]
             normWords = self.normalizeText(articleContent)
             return normWords
-        except:
-            "error in WikiManager.getArticleContent()"
+        except Exception as e:
+            print("error in WikiManager.getArticleContent()")
+            print(e)
             traceback.print_exc()
     
     def getRandomArticlesFromCategory(self, categoryName, sampleSize = 50, articleNameCompare = None, multi = False):
@@ -259,10 +269,10 @@ class WikiManager:
         test = [catObj]
         while test:
             currObj = test.pop(0)
-            print "currObj is", currObj
+            print("currObj is", currObj)
             yield currObj.title()
             for subCat in currObj.subcategories(recurse=False):
-                print subCat
+                print(subCat)
                 if subCat not in res:
                     test.append(subCat)
                     res.add(subCat)
@@ -272,8 +282,8 @@ class WikiManager:
         
     
     def getBoundedCat(self, cat, currMinSize):
-        print
-        print "getBoundedCat"
+        print()
+        print("getBoundedCat")
         site = Site("en")
         try:
             catObj = Category(site, title=cat)
@@ -285,12 +295,12 @@ class WikiManager:
         articleSet = set()
         
         for subCat in subCats:
-            print "inside subCat", subCat
+            print("inside subCat", subCat)
             newArts = set(self.getArticles(subCat, recurse=False))
             articleSet.update(newArts)
-            print len(articleSet)
+            print(len(articleSet))
             if len(articleSet) > currMinSize:
-                print "break"
+                print("break")
                 return currMinSize
                 #continue
 
@@ -302,8 +312,8 @@ class WikiManager:
         cats = self.getCategories(article)
         random.shuffle(cats)
         for cat in cats:
-            print "currMinSize", currMinSize, catName
-            print "inside", cat
+            print("currMinSize", currMinSize, catName)
+            print("inside", cat)
             catLen = self.getBoundedCat(cat, currMinSize)
             if catLen < currMinSize:
                 currMinSize = catLen
@@ -313,15 +323,15 @@ class WikiManager:
 
 def speedTest():
     wm = WikiManager()
-    print wm.cpuCount
+    print(wm.cpuCount)
     cat = "Member states of the United Nations"
     t0 = time()
     wm.getRandomArticlesFromCategory(cat, multi=True)
     t1 = time()
-    print "thread %f" %(t1-t0)
+    print("thread %f" %(t1-t0))
     wm.getRandomArticlesFromCategory(cat, multi=False)
     t2 = time()
-    print "regular %f" %(t2-t1)
+    print("regular %f" %(t2-t1))
 
 
 def getCategoryOfSize():
@@ -334,11 +344,11 @@ def getCategoryOfSize():
     for art in top:
         cats += wm.getCategories(art)
     cats = set(cats)
-    print "cats", cats
+    print("cats", cats)
     for cat in cats:
         currArts = wm.getArticles(cat)
         if len(currArts) == 4:
-            print "found", cat, currArts
+            print("found", cat, currArts)
         
 
 def popular():
@@ -352,13 +362,13 @@ def popular():
             f.write(l+"\n")
     '''
     for l in lines:
-        print l
-    print len(lines)
+        print(l)
+    print(len(lines))
     
     wm = WikiManager()
     for l in lines:
         res = wm.isPeople(l)
-        print l, wm.isPeople(l)
+        print(l, wm.isPeople(l))
         if res:
             with open("popularPeople.txt", "a+") as f:
                 f.write(l+"\n")
@@ -397,15 +407,15 @@ if __name__ == "__main__":
     articles = ["Hedy Lamarr", "Barack Obama", "Abraham Lincoln", "Donald Trump", "Bill Clinton"]
     res = []
     for article in articles: 
-        print article, wm.getSmallestCat(article)
+        print(article, wm.getSmallestCat(article))
         res.append((article, wm.getSmallestCat(article)))
-    print res
+    print(res)
     end = time.time()
     print(end - start)
     exit()
             
     
-    print wm.getRandomArticlesFromCategory("Democratic Party Presidents of the United States")
+    print(wm.getRandomArticlesFromCategory("Democratic Party Presidents of the United States"))
     
     getCategoryOfSize()
     #for s in sent[1]:

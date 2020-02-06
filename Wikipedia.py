@@ -2,13 +2,14 @@
 import sys  
 import os
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
+# reload(sys)  
+# sys.setdefaultencoding('utf8')
 
 import re
 import yaml
 import urllib
-import urllib2
+import urllib.request
+# import urllib
 from Wiki2Plain import Wiki2Plain
 
 class WikipediaError(Exception):
@@ -23,21 +24,21 @@ class Wikipedia:
         self.lang = lang
     
     def __fetch(self, url):
-        request = urllib2.Request(url)
-        request.add_header('User-Agent', 'Mozilla/5.0')
+        # request = urllib.Request(url)
+        # request.add_header('User-Agent', 'Mozilla/5.0')
         
         try:
-            result = urllib2.urlopen(request)
-        except urllib2.HTTPError, e:
+            result = urllib.request.urlopen(url)
+        except urllib.error.HTTPError as e:
             raise WikipediaError(e.code)
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             raise WikipediaError(e.reason)
         
         return result
     
     def article(self, article):
-        url = self.url_article % (self.lang, urllib.quote_plus(article))
-        content = self.__fetch(url).read()
+        url = self.url_article % (self.lang, urllib.parse.quote_plus(article))
+        content = self.__fetch(url).read().decode('utf-8')
         
         if content.upper().startswith('#REDIRECT'):
             match = re.match('(?i)#REDIRECT \[\[([^\[\]]+)\]\]', content)
@@ -72,7 +73,7 @@ class Wikipedia:
     
     def search(self, query, page=1, limit=10):
         offset = (page - 1) * limit
-        url = self.url_search % (self.lang, urllib.quote_plus(query), offset, limit)
+        url = self.url_search % (self.lang, urllib.parse.quote_plus(query), offset, limit)
         content = self.__fetch(url).read()
         
         parsed = yaml.load(content)
@@ -117,13 +118,17 @@ def getPlainArticle(name):
         article = wiki.article(name)
         plain = Wiki2Plain(article)
         retval = plain.text
-    except:
-        print "Wikipedia.getPlainArticle(name): error while getting article ", name
+    except Exception as e:
+        print("Wikipedia.getPlainArticle(name): error while getting article ", name)
+        print(e)
     baseDir = os.path.dirname(filename)
     if not os.path.exists(baseDir):
         os.makedirs(baseDir)
-    with open(filename, "w") as f:
-        f.write(retval)
+    try:
+        with open(filename, "w") as f:
+            f.write(retval)
+    except Exception as e:
+        print(e)
     return retval
 
 if __name__ == '__main__':
@@ -131,9 +136,9 @@ if __name__ == '__main__':
     start = time.time()
     art = "Hedy Lamarr"
     content = getPlainArticle(art)
-    print content
+    print(content)
     end = time.time()
     print(end - start)
     with open("timeRes.txt", "w") as f:
         f.write("parallel "+ str(end - start))
-    print 'OK'
+    print('OK')

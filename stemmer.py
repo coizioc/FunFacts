@@ -352,7 +352,7 @@ class PorterStemmer:
 
 if __name__ == '__main__':
     p = PorterStemmer()
-    print p.stemWord("pruning")
+    print(p.stemWord("pruning"))
     '''
     p = PorterStemmer()
     if len(sys.argv) > 1:

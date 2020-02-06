@@ -3,8 +3,8 @@
 
 import sys  
 
-reload(sys)  
-sys.setdefaultencoding('utf8')
+# reload(sys)  
+# sys.setdefaultencoding('utf8')
 
 import logging
 import WikiManager
@@ -34,7 +34,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 class similarityWord2Vec:
 
     def __init__(self):
-        print "init similarityWord2Vec"
+        print("init similarityWord2Vec")
         self.wikiManager = WikiManager.WikiManager()
         self.model = None
         self.idfIndex = None
@@ -57,15 +57,15 @@ class similarityWord2Vec:
         if self.model or self.idfIndex:
             return 
         #global model
-        print "loading word2vec model"
+        print("loading word2vec model")
         self.model = gensim.models.KeyedVectors.load_word2vec_format("models/GoogleNews-vectors-negative300.bin", binary=True)  # C text format
-        print "done"
+        print("done")
         #model = gensim.models.Word2Vec.load_word2vec_format("models/glove_model.txt", binary=False)  # C text format
     
         #global idfIndex
-        print "loading idfIndex model"
+        print("loading idfIndex model")
         self.idfIndex = indexManager.getIndex("plainIdfIndex.txt")
-        print "done"
+        print("done")
         #return (model, idfIndex)
     
 
@@ -97,11 +97,11 @@ class similarityWord2Vec:
         
         if len(topWordsDestemmed)!=topK:
             if self.printMode:
-                print topWordsDestemmed
+                print(topWordsDestemmed)
                 for word in articleText:
-                    print word
+                    print(word)
                     if not self.wikiManager.reverseStemHashtable[word] in self.model.vocab:
-                        print "not present"
+                        print("not present")
             #assert len(topWordsDestemmed)==topK
     
         
@@ -112,8 +112,8 @@ class similarityWord2Vec:
         #article1 = getTopTfIdfTerms(articleName1)
         #article2 = getTopTfIdfTerms(articleName2)
         if self.printMode:
-            print "article1", article1
-            print "article2", article2
+            print("article1", article1)
+            print("article2", article2)
         distance = 0
         wordsLen = len(article1)
         if wordsLen == 0 or len(article2) == 0: 
@@ -136,10 +136,10 @@ class similarityWord2Vec:
         if article1==[] or article2==[]:
             return 0
         if self.printMode:
-            print articleName1, ",", articleName2
-            print "top-K", topK
-            print "top tf-idf tokens for", articleName1, article1
-            print "top tf-idf tokens for", articleName2, article2
+            print(articleName1, ",", articleName2)
+            print("top-K", topK)
+            print("top tf-idf tokens for", articleName1, article1)
+            print("top tf-idf tokens for", articleName2, article2)
         #print "n_similarity", model.n_similarity(article1, article2)
         '''
         sim1to2 = self.articlesSimilarity2(article1, article2, weighted)
@@ -152,8 +152,8 @@ class similarityWord2Vec:
         #with open("categoryExample.txt", "a") as f:
         #    f.write(articleName1+"|||"+articleName2+"|||"+str(retval)+"\n")
         if self.printMode:
-            print retval
-            print
+            print(retval)
+            print()
         return retval
     
     #articlesSimilarity("queen", "king")
@@ -167,33 +167,32 @@ class similarityWord2Vec:
         #destem
         for word in first:
             if not self.wikiManager.reverseStemHashtable[word] in self.model.vocab:
-                print "word not found", self.wikiManager.reverseStemHashtable[word]
+                print("word not found", self.wikiManager.reverseStemHashtable[word])
                 #exit()
         for cat in catNorm:
             for word in cat[1]:
                 if not self.wikiManager.reverseStemHashtable[word] in self.model.vocab:
-                    print "word not found", self.wikiManager.reverseStemHashtable[word]
+                    print("word not found", self.wikiManager.reverseStemHashtable[word])
                     #exit()
         
         first = [self.wikiManager.reverseStemHashtable[word] for word in first if self.wikiManager.reverseStemHashtable[word] in self.model.vocab]
         catNorm = [(cat[0], [self.wikiManager.reverseStemHashtable[word] for word in cat[1] if self.wikiManager.reverseStemHashtable[word] in self.model.vocab]) for cat in catNorm]
         
-        print first
-        print catNorm
+        print(first)
+        print(catNorm)
         
         catSim = [(cat[0], self.articlesSimilarity2(cat[1], first, weighted=False)) for cat in catNorm]
         for cat in sorted(catSim, key=lambda x:x[1]):
-            print cat
+            print(cat)
         exit()
     
     
     def categoryCohesiveness(self, categoryName, compareToArticleName = None):
-        print "categoryCohesiveness function"
+        print("categoryCohesiveness function")
         baseIndex = "cohesivenessIndex.txt"
         indexName = compareToArticleName+baseIndex if compareToArticleName else baseIndex
         indexName = "cohesivenessIndexCache/"+indexName
-        if self.printMode:
-            print indexName
+        print(indexName)
         #global cohesivenessIndex
         cohesivenessIndex = indexManager.getCohesIndex(indexName)
         #print cohesivenessIndex
@@ -222,7 +221,7 @@ class similarityWord2Vec:
         if compareToArticleName:
             compareToArticleText = self.wikiManager.getArticleContent(compareToArticleName)
             if self.printMode:
-                print compareToArticleName, compareToArticleText
+                print(compareToArticleName, compareToArticleText, subSize)
             for i in range(subSize):
                 currCohes = self.articlesSimilarity(compareToArticleText, subText[i], compareToArticleName, subNames[i])
                 
@@ -250,10 +249,10 @@ class similarityWord2Vec:
         cohesivenessIndex[categoryName] = aveCohes
         
         with open(indexName, "a") as f:
-            f.write(categoryName.encode('utf-8') + " " + str(aveCohes) + "\n")
+            f.write(categoryName + " " + str(aveCohes) + "\n")
         
         if self.printMode:
-            print res
+            print(res)
     
         return categoryName, aveCohes
     
@@ -289,9 +288,9 @@ class similarityWord2Vec:
         if self.printMode:
             try:
                 for rat in sorted(ratio):
-                    print ratio[rat], rat.encode('utf8')
+                    print(ratio[rat], rat.encode('utf8'))
             except:
-                print "error printing rat"
+                print("error printing rat")
         return ratio
             
     def getInterestingness(self, art, cat):
@@ -309,14 +308,14 @@ class similarityWord2Vec:
                 os.makedirs(subDir)
             subIndex = subDir+art+"metricOutput.txt"
             
-        print art
+        print(art)
         
         if not self.forceRefresh:
             try:
                 sub = str(self.batch)+"/" if self.batch else ""
                 metricIndex = indexManager.getMetricIndex(art, sub)
                 if self.printMode:
-                    print metricIndex
+                    print(metricIndex)
                 if self.batch:
                     indexManager.copyIndex(indexName, subIndex)
             except:
@@ -327,20 +326,20 @@ class similarityWord2Vec:
         
         cats = self.wikiManager.getCategories(art)
         if cats == []:
-            print "Error! No categories found for article ", art
-            print "Please fix this bug"
+            print("Error! No categories found for article ", art)
+            print("Please fix this bug")
         #views = CategoryViews.getViews(cats)
         #cats = [cat.split(":")[1] for cat in cats]
-        print "mycats", cats
+        print("mycats", cats)
         cohesResults = {}
         cohesAbsResults = {}
     
         for cat in sorted(cats):
             #cat = view.split(":")[1]
             try:
-                print "cat", unicode(cat), art.encode("utf8")
+                print("cat", cat, art)
             except:
-                print "cat print error"
+                print("cat print error")
             if not self.categoryCohesiveness(cat, art):
                 continue
             cohesResults[cat] = self.categoryCohesiveness(cat, art)[1]
@@ -367,11 +366,11 @@ class similarityWord2Vec:
             else:
                 catSizes.append(0)
         if self.printMode:    
-            print cohesList
-            print viewsList
+            print(cohesList)
+            print(viewsList)
         ratio = self.createRatioDict(cohesAbsList, cohesList, labels)
         metricOutput = u""
-        metricOutput += art.decode("utf8") + "\n"
+        metricOutput += art + "\n"
         metricOutput += "Bottom 5 categories:\n"
         for rat in sorted(ratio)[:5]:
             metricOutput += ratio[rat]
@@ -390,13 +389,13 @@ class similarityWord2Vec:
     
         if self.printMode:
             try:
-                print metricOutput.encode('utf8')
+                print(metricOutput)
             except:
-                print "error printing metric"
+                print("error printing metric")
         try:
-            print "writing metric to file", art.encode('utf8')
+            print("writing metric to file", art)
         except:
-            print "error printing article name"
+            print("error printing article name")
 
         with codecs.open(indexName, "w+", "utf-8") as f:
             f.write(metricOutput)
@@ -404,22 +403,22 @@ class similarityWord2Vec:
             indexManager.copyIndex(indexName, subIndex)
         #'''
         cohesivenessRes = [cohesAbsResults[curr] for curr in sorted(cohesAbsResults)]
-        print cohesivenessRes
-        print cohesAbsResults
+        print(cohesivenessRes)
+        print(cohesAbsResults)
         surpriseRes = [1.0/cohesResults[curr] for curr in sorted(cohesResults)]
-        print surpriseRes
-        print cohesResults
+        print(surpriseRes)
+        print(cohesResults)
         labels = sorted([t[11:] for t in labels])    
         z = zip(*(labels, cohesivenessRes, surpriseRes, [cohesResults[curr] for curr in sorted(cohesResults)]))
         for i in z:
-            print i
+            print(i)
         #plotScat(cohesivenessRes, surpriseRes, "Cohesiveness", "Surprise", labels, 4, art)
     
     
     def articleToCategorySimilarity(self, art):
         categories = self.wikiManager.getCategories(art)
         if self.printMode:
-            print "categories", categories
+            print("categories", categories)
         cohesResults = []
         for cat in categories:
             cohesResults.append(self.categoryCohesiveness(cat, art))
@@ -427,7 +426,7 @@ class similarityWord2Vec:
         #cohesResults = sorted(cohesResults, key=lambda x:x[1])
         if self.printMode:   
             for cohes in cohesResults:
-                print cohes
+                print(cohes)
         labels = []
         x = []
         y = []
@@ -443,13 +442,13 @@ class similarityWord2Vec:
     
         #cohesThresh = sorted(catCohes)[len(catCohes)/3]
     
-        print art
-        print "ratio:"
+        print(art)
+        print("ratio:")
         for rat in sorted(ratio):
-            print ratio[rat], rat
+            print(ratio[rat], rat)
         
-        print "x", x
-        print "y", y
+        print("x", x)
+        print("y", y)
         
         plotScat(x, y, "category cohesiveness", "article to category similarity", labels, 4, art) 
         #exit()
@@ -470,7 +469,7 @@ class similarityWord2Vec:
             cohesResults.append(cohes)
         #print cohes
         for cohes in sorted(cohesResults, key=lambda x:x[1]):
-            print cohes
+            print(cohes)
         '''
         for cohes in sorted(cohesResults, key=lambda x:x[4]):
             print cohes
@@ -531,12 +530,12 @@ class similarityWord2Vec:
             y.append(cohesDict[cat][1])
             catLen.append(math.log10(catlenDict[cat]))
             labels.append(cat)
-            print cat, surpriseDict[cat], cohesDict[cat], catlenDict[cat]
+            print(cat, surpriseDict[cat], cohesDict[cat], catlenDict[cat])
             
             
         cohesSurprise = [(labels[i], x[i]*y[i]) for i in range(len(x))]
         for cohes in sorted(cohesSurprise, key=lambda x:x[1]):
-            print cohes
+            print(cohes)
         
         plotScat(x, y, 'Surprise', 'Cohesiveness', labels, 1)
         plotScat(x, catLen, 'Surprise', 'len', labels, 2)
@@ -582,9 +581,9 @@ class similarityWord2Vec:
         for word in topWords:
             #print word, idfIndex[word] if word in idfIndex else 1.5
             try:
-                print self.model.most_similar(positive=[word], topn=10)
+                print(self.model.most_similar(positive=[word], topn=10))
             except:
-                print "word not in vocabulary"
+                print("word not in vocabulary")
 
 
 #print model.accuracy(r"C:\Users\David\workspace\Wiki\gitWiki\questions-words.txt")
@@ -595,7 +594,7 @@ class similarityWord2Vec:
 
     def prepareBatches(self):
         batch = [[] for x in range(20)]
-        print batch
+        print(batch)
         
         with open("articleLists/input.txt") as f:
             lines = f.readlines()
@@ -694,9 +693,9 @@ class similarityWord2Vec:
         try:
             self.viewsVsCohesiveness(art)
         except:
-            print "Error"
+            print("Error")
             try:
-                print art
+                print(art)
             except:
                 pass
             traceback.print_exc(file=sys.stdout)
@@ -704,7 +703,7 @@ class similarityWord2Vec:
 
     def categoryRepresentative(self, cat):
         arts = self.wikiManager.getArticles(cat)
-        print "arts", arts
+        print("arts", arts)
         interestingness = {}
         for art in arts:
             cohes, surprise = self.getInterestingness(art, cat)
@@ -714,7 +713,7 @@ class similarityWord2Vec:
             text = ""
             for art in sorted(interestingness, key=lambda x:x[1]):
                 text += art + " " + str(interestingness[art]) + "\n"
-            print text
+            print(text)
             f.write(text)
 
 
@@ -746,4 +745,4 @@ if __name__ == "__main__":
         print(end - start)
         with open("timeRes.txt", "w") as f:
             f.write("parallel "+ str(end - start))
-    print 'OK'       
+    print('OK')    

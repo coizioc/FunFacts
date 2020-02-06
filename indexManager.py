@@ -11,7 +11,7 @@ from shutil import copyfile
 
 
 def copyIndex(src, dest):
-    print dest
+    print(dest)
     if not os.path.exists(os.path.dirname(dest)):
         try:
             os.makedirs(os.path.dirname(dest))
@@ -78,7 +78,7 @@ def getMetricIndex(art, sub = ""):
                 start = i+1
         for line in content[start:]:
             spl = line.split()
-            print spl
+            print(spl)
             if spl == []:
                 continue
             try:
